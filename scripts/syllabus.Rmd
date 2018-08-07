@@ -50,19 +50,35 @@ Presenting Data Analysis Topics
 
 Evaluation
 ===========
-Students will be evaluated based in two areas: weekly assignments and
+Students will be evaluated based in two areas: weekly Problem sets and
 the final project. 
 
 * Problem sets: 65% Each week I will assign a problem set for
   students to complete. These problem sets will be assigned on Monday,
   and will be due the next Sunday night at 11:59:59 pm. No late
-  assignments will be accepted. Each assignment will be graded on a
+  problem sets will be accepted. Each problem set will be graded on a
   100 point scale. Your lowest grade will be dropped. 
+  
+  There will be 13 assigned problem sets, with each problem set worth 100 points. The lowest grade will be dropped, meaning that you will be graded on 12 of these problem sets. The grading standards will be as follows:
+  
+  50=turned in problem set, did not attempt most of the problems
+  
+  75= turned in problem set, attempted most of the problems
+  
+  100= turned in problem set, attempted all of the problems
+  
+  Note that your grade on problem sets does not depend on you being correct on all problems, but simply making a serious attempt to answer all of the problems. 
 
 * Final Project 35%: During the course of the semester you will
   work on a final assignment utilizing your skills as a data
-  analyst.  There will be four progress reports
-  due for the final project, each of which will be worth 12.5% of the final  grade for the project. No late progress reports will be accepted. The final product will account for the remaining 50%. No late final projects will be accepted. 
+  analyst.  
+  
+There will be four progress reports for the final project, each of which will be worth 12.5% of the final  grade for the project. No late progress reports will be accepted. The final product will account for the remaining 50%. No late final products will be accepted. 
+  
+There are two parts to the final project grade, your progress reports and the product itself. Each project report is worth 12.5% of the grade. These will be graded based on completion of the enumerated steps in the report, and will be graded on a 100 point scale.
+  
+The final product will be worth 50% of your final project grade. A rubric will be supplied containing the relevant grading information for this final product. 
+  
 
 Texts
 ======
@@ -88,13 +104,13 @@ platform for all analysis. R appears to be the most widely used data analysis so
 Honor Code Statement
 ===============
 
-All assignments for this class, including weekly assignments and the final project, are to be conducted under the obligations set out in Vanderbilt's Honor Code. Please click [here](http://www.vanderbilt.edu/student_handbook/the-honor-system/)to review the honor code.
+All assignments for this class, including weekly problem sets and the final project, are to be conducted under the obligations set out in Vanderbilt's Honor Code. Please click [here](http://www.vanderbilt.edu/student_handbook/the-honor-system/)to review the honor code.
 
 There will be two quite different standards for completing the
-assignments and the final project. 
+problem sets and the final project. 
 
-*Assignments* You may collaborate with anyone and you may utilize
-  any resource you wish to complete these assignments. 
+*problem sets* You may collaborate with anyone and you may utilize
+  any resource you wish to complete these problem sets. 
   
 *Final Project* All of the work on the final assignment must be
   your own. Anyone's work that you reference should be cited, as
@@ -148,9 +164,9 @@ Silver, Chapters 5-9, 12-13
 
 Chapter 2, Condtional Means: `02-conditional_means.Rmd`.
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous Section: Conditional Means*
 
@@ -175,9 +191,9 @@ Wickham: [Data visualization](http://r4ds.had.co.nz/data-visualisation.html)
 
 Chapter 3, Plotting Distributions and Condtional Means: `03-plot_means.Rmd`.
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Final Project*
 First progress reports due, Sunday midnight
@@ -198,9 +214,9 @@ Wickham: [Data import](http://r4ds.had.co.nz/data-import.html), [Tidy data](http
 
 Chapter 4, Flat Data `04-flat_data.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous session: working with various data formats*
 
@@ -218,9 +234,9 @@ Wickham: [Model: Introduction](http://r4ds.had.co.nz/model-intro.html),  [Model 
 
 Chapter 5, Linear Regression `05-regression.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous session: using linear regression, training and testing Models*
 
@@ -242,9 +258,9 @@ Tufte, Envisioning Information, chapter 2
 
 Chapter 6, Scatterplots `06-scatterplots.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Final Project*
 
@@ -270,9 +286,9 @@ Rvest Vignette: [https://cran.r-project.org/web/packages/rvest/vignettes/selecto
 
 Chapter 7, Web Scraping and APIs, `07-webscrape.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous session: Accessing data from the web*
 
@@ -292,9 +308,9 @@ Althoff, T., Danescu-Niculescu-Mizil, C., & Jurafsky, D. (2014, May). How to Ask
 
 Chapter 8, Classification, `08-classification.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous Session: Classification*
 
@@ -309,9 +325,9 @@ i<-i+1
 *Resources*
 
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Final Project*
 
@@ -352,9 +368,9 @@ Working with Databases in R, available: [https://cran.r-project.org/web/packages
 
 Chapter 11, Databases `11-databases.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous session* Databases and relational data
 
@@ -375,9 +391,9 @@ James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). An introduction to s
 
 Chapter 12, Unsupervised Learning `12-unsupervised.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Final Project*
 
@@ -398,9 +414,9 @@ i<-i+1
 
 Chapter 13, Interactive Graphics `13-interactive.Rmd`
 
-*Assignments*
+*Problem sets*
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous Session* Interactive Graphics
 
@@ -410,8 +426,8 @@ i<-i+1
 
 ## Week `r i`: Topic for the Week: Communicating Results
 
-Assignment `r i-1` Due Midnight Sunday
+Problem set `r i-1` Due Midnight Sunday
 
 *Synchronous Sessions* Class Presentations 
 
-## Final Projects Due Two Weeks After Last Class
+## Final Products Due Two Weeks After Last Class
