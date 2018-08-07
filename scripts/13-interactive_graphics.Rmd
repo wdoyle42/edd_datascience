@@ -1,0 +1,32 @@
+---
+title: "Interactive Graphics"
+author: "Will Doyle"
+date: "August 6, 2018"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(shiny)
+```
+
+## Plotly: Descriptives
+
+
+```{r}
+load("els.Rdata")
+```
+
+
+## Plotly: Multivariate Graphics
+
+## Leaflet for Mapping
+
+## Rshiny: basics
+
+## Rshiny: linear regression
+
+## Rshiny: classification
+
+
