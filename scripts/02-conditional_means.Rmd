@@ -33,10 +33,8 @@ The codebook for this dataset is stored as another dataset, `labels_explain`. Th
 
 ```{r explain_date}
 
-## Full explanation of data
+## Full explanation of data in codebook
 load("pd_lab_explain.Rdata")
-
-lab_explain
 
 #or use View
 #View(lab_explain)
@@ -218,3 +216,5 @@ rmse_cond_mean_one
 
 
 *Quick Exercise: Calculate per capita income as a function of the proportion of the county with a high school education*
+
+We can continue "binning" the data to define averages by more and more subgroups. For instance, we might want to calculate the average income by education AND home ownership rate.

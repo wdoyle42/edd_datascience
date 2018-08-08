@@ -75,7 +75,7 @@ gg
 
 ## Predicting Attrition
 
-Our first prediction will use business travel as a predictor for attrition. There are three categories here-- non travel, travel infrequently, and frequent travel. We'll calculate levels of attrtion at teach level and then take a look at the data. 
+Our first prediction will use business travel as a predictor for attrition. There are three categories here-- non travel, travel infrequently, and frequent travel. We'll calculate levels of attrtion at each level and then take a look at the data. 
 
 
 ```{r}
@@ -90,6 +90,7 @@ at_sum
 
 Remember that the mean of a binary variable indicates the proportion of the population that has a certain characteristcs. So, in our case, `r  round(at_sum$attr_avg[2],2)` of the sample that travels frequently left the company in the last year. Our first plot will be a basic bar plot, showing the average levels of attrition. 
 
+To get started, let's see what this looks like in a table.
 ```{r}
 at %>%
   count(BusinessTravel,attrit) %>%
@@ -99,29 +100,7 @@ at %>%
   spread(attrit, prop)%>%kable()
 ```
 
-
-```{r}
-at1<-at %>%
-  count(BusinessTravel,attrit) %>%
-  group_by(BusinessTravel)%>%
-  mutate(prop = prop.table(n)) 
-
-at1%>%
-  select(-n) %>%
-  spread(attrit, prop)%>%
-  kable()
-```
-
-
-```{r}
-gg<-ggplot(at1,aes(y=BusinessTravel,x=as.factor(attrit)))
-gg<-gg+geom_tile(aes(fill=prop))
-gg<-gg+scale_fill_gradient2(low="white",high="blue")
-gg<-gg+xlab("Left Company")
-gg
-```
-
-
+Now we can plot it:
 
 ```{r}
 ## Bar Plot with aesthetics: mean attrition as height, business travel as cateogry
@@ -181,27 +160,29 @@ at_sum<-at%>%
 
 ## Get the results
 at_sum
+```
 
+```{r}
 ## PLot it using a bar plot
 gg<-ggplot(at_sum,aes(x=fct_reorder(BusinessTravel,attr_avg),y=attr_avg,color=Gender))
 gg<-gg+geom_bar(stat="identity",aes(fill=Gender),position="dodge")
-gg
-
 gg<-gg+ylab("Pr(Attrition)")+xlab("Frequency of Travel")
 gg
+```
 
+```{r}
 ## Plot it using a dot plot
 gg<-ggplot(at_sum,aes(x=reorder(BusinessTravel,attr_avg),y=attr_avg),color=Gender)
 gg<-gg+geom_point(aes(color=Gender))
 gg<-gg+coord_flip()
 gg
-
-
 ```
 
-*Quick Exercise: Create either a bar plot or a dot plot showing attrition by department AND field of education*
 
-## MOAR Variables: faceting
+
+* Quick Exercise: Create either a bar plot or a dot plot showing attrition by department AND field of education *
+
+## More Variables: faceting
 
 We can continue this logic with three variables. Now we're going to summarize by Travel, Gender and Marital status. Here we're going to use an additional tool in our arsenal: Faceting. Faceting means making multiple graphs with the same structure. In the code below, we will arrange positions based on travel, color based on gender, and then split the graphic by marital status. 
 
@@ -212,7 +193,9 @@ at_sum<-at%>%
   summarize(attr_avg=mean(attrit))
 
 at_sum
+```
 
+```{r}
 gg<-ggplot(at_sum,aes(x=reorder(BusinessTravel,attr_avg),
                       y=attr_avg,
                       fill=Gender))

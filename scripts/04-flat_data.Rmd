@@ -36,7 +36,8 @@ my.names<-names(hsb)
 write_delim(hsb, path="hsb.txt",delim="\t")
 
 write_delim(hsb, path="hsb_semicolon.txt",delim=";")
-#gdata::write.fwf(data.frame(hsb),file="hsb.dat",sep="",colnames=FALSE)
+
+gdata::write.fwf(data.frame(hsb),file="hsb.dat",sep="",colnames=FALSE)
 ```
 
 *Quick exercise: write out the HSB file with a semicolon delimiter*
@@ -278,4 +279,4 @@ write_csv(free2,"frl.csv")
 
 ## Databses and flat files
 
-As we'll discuss later, databases are linked collections of flat files, usually stored in `.csv` format. If you're working with a database technician and would like a flat file for analysis, the way to ask for it is to request a flat file in csv format. Most database analysts will know what you mean by this. We'll cover databases in much more data later. 
+As we'll discuss later, databases are linked collections of flat files, usually stored in `.csv` format. If you're working with a database technician and would like a flat file for analysis, the way to ask for it is to request a flat file in csv format. Most database analysts will know what you mean by this. We'll cover databases in much more detail later. 
