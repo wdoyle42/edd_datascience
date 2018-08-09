@@ -1,7 +1,7 @@
 ---
 title: "Using Databases"
 author: "Will Doyle"
-output: github_document
+output: html_document
 ---
 
 # Introduction: What's a Database? 
@@ -26,23 +26,15 @@ An R analyst typically doesn't want to be a database person-- they just want to 
 
 Today we'll use the `nyclfights13` database, which contains information on every single flight departing New York City in 2013, including airline information, airport information, flight information, plane information and weather information. 
 
-Here is the schema for the nycflights13 database 
-
-We'll also use the Lahman database, which contains information on every single player to ever play any professional baseball since 1871, including batting, pitching, team information and so on. 
-
 ```{r}
 # Mostly taken from : http://cran.r-project.org/web/packages/dplyr/vignettes/databases.html circa 2014
 
 # Will need: nycflights13 RSQLite, Lahman
 
 #Get libraries
-
 library(tidyverse)
-library(DBI)
-library(dbplyr)
-library(RSQLite)
 library(nycflights13)
-library(Lahman)
+library(RSQLite)
 ```
 
 The first thing we'll do is get all of the various tables open. They're stored in `data()` from the `nycflights` library. 
@@ -86,6 +78,9 @@ dbWriteTable(con,
              "airports", 
              as.data.frame(airports))
 ```
+
+
+## Tables and Fields
 Now I have an open connection to a database that contains multiple tables. Let's ask which tables we have access to:
 ```{r}
 #List tables in database
@@ -117,23 +112,6 @@ dbClearResult(req)
 ```
 
 
-```{r}
-#Generate a SQL request to a database
-req_text<-"Select * from weather"
-
-#Send query through connection
-req<-dbSendQuery(con,req_text)
-
-#Generate dataframe from results
-req_df<-dbFetch(req,n=-1)
-
-#Good practice: clear request
-dbClearResult(req)
-```
-
-
-
-
 Let's take a look at the generated data frame. 
 ```{r}
 dim(req_df)
@@ -143,7 +121,56 @@ head(req_df,20)
 
 *Quick Exercise:*  Get the weather table and put it in a data frame
 
-Many times we want to generate a request that will only give us part of some tables. We'd also like to join tables together in many circumstances. Below is a SQL request that includes the key verbs SELECT, FROM, JOIN and WHERE.
+## Select and From
+
+Many times we want to generate a request that will only give us part of some tables. We'd also like to join tables together in many circumstances. Below we build a SQL request that includes the key verbs SELECT, FROM, JOIN and WHERE.
+
+Let's say that we're interested in which airlines might have longer delays. 
+
+```{r}
+req1_text<-"SELECT f.dep_delay 
+            FROM flights f 
+            "
+req1<-dbSendQuery(con,req1_text)
+
+req1_df<-dbFetch(req1,n=-1)
+
+dbClearResult(req1)
+
+head(req1_df) 
+```
+
+We then need to get the airline data from the weather table
+```{r}
+
+req1_text <- "SELECT a.carrier, a.name
+FROM airlines a"
+
+```
+
+Notice how the SELECT commands give a prefix to field names, and that the FROM command identifies that same prefix when specifying the table. 
+
+
+## Join and Where
+
+We have airline information and departure information, but now we need to put them together. The JOIN command does just this. We need to specify for the JOIN command how we're going to put these two tables together. 
+
+```{r}
+req1_text<-"SELECT a.carrier, a.name, f.dep_delay 
+            FROM flights f 
+            JOIN airlines a ON a.carrier=f.carrier 
+            "
+req1<-dbSendQuery(con,req1_text)
+
+req1_df<-dbFetch(req1,n=-1)
+
+dbClearResult(req1)
+
+head(req1_df)
+
+
+```
+
 
 ```{r}
 #New request: which carriers have longer delays? 
