@@ -155,11 +155,8 @@ mod2_rmse_cv<-pd_cv %>%
   mutate(rmse = map2_dbl(model, test, rmse))%>% 
   select(.id, rmse) ## pull just id and rmse 
 
-
-
 summary(mod2_rmse_cv$rmse)
 summary(mod1_rmse_cv$rmse)
-
 
 gg<-ggplot(mod2_rmse_cv,aes(x=rmse))
 gg<-gg+geom_density(fill="orange",alpha=.2)
@@ -174,24 +171,8 @@ This graphic gives us a sense of model performance: While model 2 (orange) gener
 
 ## Model Tuning
 
-In model tuning, we try to find the best possible model among various candidates. There are two basic ways to acomplish this. One is using a model that the analyst has identified, either through theory or practice or both, as a good model to predict the outcome. This has been our basic perspective in this class. However, this model can still be refined by choosing the best candidate after having trained it on multiple training datasets, by choosing the model parameters that minimize RMSE. The code below, based on the `train` function from the `caret` library does just that. 
+In model tuning, we try to find the best possible model among various candidates. There are two basic ways to acomplish this. One is using a model that the analyst has identified, either through theory or practice or both, as a good model to predict the outcome. This has been our basic perspective in this class. 
 
-```{r}
-load("quickfacts.Rdata")
-
-qf<-qf%>%
-  select(median_home_val,
-         median_hh_inc,
-         coll_grad_pc,
-         homeown_rate,
-         per_capita_inc,
-         white_pc,
-         persons_below_poverty,
-         person_per_hh)%>%
-       mutate_all(funs(as.numeric))%>%tbl_df()
-
-df<-df%>%mutate(myvar=as.character(myvar))
-```
 ## Machine Learning
 
 Of course, we can also just let the computer choose a model from a set of candidate variables. Below, I use stepwise regression, which involves proposing candidate variables and evaluating their ability to lower RMSE, as the basis for choosing a "best" model. 
@@ -199,27 +180,35 @@ Of course, we can also just let the computer choose a model from a set of candid
 ```{r}
 #Tuning model parameters
 
-qf$log_median_home_val<-log(qf$median_home_val+1)
+fitControl<-trainControl(method="boot",
+                         p=.2)
 
-qf<-qf[,-"median_home_val"]
 
-fit2<-train(log_median_home_val~.,
-            data=qf,
-            method="glmStepAIC",
+fit1<-train(home_rank~per_capita_inc+
+              coll_grad_pc,
+            method="lm",
+            data=pd,
             trControl=fitControl)
 
+summary(fit1)
 fit1$results
 
+fit2<-train(home_rank~.,
+            data=pd,
+            method="glmStepAIC",
+            trControl=fitControl)
+summary(fit2)
 fit2$results
 
 rmse_data<-tbl_df(data.frame(fit1$resample$RMSE,fit2$resample$RMSE))
 names(rmse_data)<-c("fit1","fit2")
 
 gg<-ggplot(rmse_data,aes(x=fit1))
-gg<-gg+geom_density()
-gg<-gg+geom_density(aes(x=fit2),color="red")
+gg<-gg+geom_density(fill="orange",alpha=.2)
+gg<-gg+geom_density(aes(x=fit2),fill="blue",alpha=.2)
 gg
 ```
 
+What this shows is that the second model---using stepwise regression--- has superior out-of-sample results to the first model. 
 
-In different situations we may care more about WHY something predicts an outcome, and in other situations we care more about WHETHER something predicts an outcome. The key is to be clear with yourself and/or your client about what you're interested in. Model selection via stepwise regression or other algorithms is not a panacea. 
+In different situations we may care more about WHY something predicts an outcome, and in other situations we care more about WHETHER something predicts an outcome. The key is to be clear with yourself about what you're interested in. Model selection via stepwise regression or other algorithms is not a panacea. 
