@@ -20,9 +20,8 @@ We will cover several different ways you can get data from the web
 1. Scraping simple web tables via `read_html()` and `html_table()` command
 1. Scraping complex web tables via `read_html()` and `html_nodes()`
 1. Interacting with Application Programming Interfaces (APIs) via R libraries that have been designed as "wrappers" for these interfaces, like the awesome `acs` library and the `tigris` library for geographic shapes. 
-1. Interacting with APIs directly, using the [Zillow API](https://www.zillow.com/howto/api/APIOverview.htm).
+1. Interacting with APIs directly, 
 
-Just for fun, we'll output the results of this data to interactive graphics. 
 
 ## Libraries
 
@@ -30,31 +29,15 @@ We will use multiple new libraries today. Among the ones you'll need:
 
 * `rvest` for scraping websites
 
-* `lubridate` for working with dates
-
-* `plotly` for interactive plots
-
 * `acs` for accessing American Community Survey data via the census API
-
-* `tigris` for accessing TIGER shapefiles via the census API
-
-* `noncensus` for various geographic information, particularly around zip codes. 
-
 
 
 ```{r}
-library(rvest)
-library(ggthemes)
-library(lubridate)
-library(acs)
-library(noncensus)
-library(leaflet)
-library(tigris)
-options(tigris_use_cache = TRUE) # save tigris shapefiles
-library(plotly)
-library(ggplot2)
-library(forcats)
 library(tidyverse)
+library(rvest)
+library(acs)
+library(lubridate)
+library(noncensus)
 ```
 
 
@@ -78,9 +61,9 @@ r_home
 # Pulling text from a website using readlines
 # url of Moby Dick (project Gutenberg)
 moby_url = url("http://www.gutenberg.org/files/2701/2701-h/2701-h.htm")
-# reading the content (first 500 lines)
+# reading the content (first 1500 lines)
 moby_dick = readLines(moby_url, n = 1500)
-moby_dick[1145:1148]
+moby_dick[1160:1168]
 ```
 
 
@@ -108,42 +91,21 @@ marathon$date<-mdy(marathon$Date)
 ```
 
 
-```{r}
-marathon_wiki = "https://en.wikipedia.org/wiki/Marathon_world_record_progression"
-
-# Get the page, pull the tables via html_table
-marathon <- read_html(marathon_wiki)%>%html_table()
-
-#Men's is the first table
-marathon<-tbl_df(data.frame(marathon[[2]]))
-
-#Convert time to seconds
-marathon<-marathon%>%mutate(Time2=hms(as.character(Time)))%>%mutate(Time2=period_to_seconds(Time2))
-
-#Marathons are 42,200 meters long
-marathon$speed<-(4.22e4)/marathon$Time2
-
-#Get dates in a usable format usin lubridate::mdy
-marathon$date<-mdy(marathon$Date)
-```
-
 ## Progression of World Record Marathon Speed in Meters/Second
 ```{r}
 
 marathon<-marathon%>%mutate(Nationality=fct_reorder(f=as.factor(Nationality),x=-speed,fun = max))
 
 g1<-ggplot(data=marathon,
-           aes(y=speed,x=marathon$date,
+           aes(y=speed,x=date,
                #Reorder nationality by fastest times
-               color=Nationality,
-               text=paste(Name,Time))
+               color=Nationality)
            )  
 g1<-g1+geom_point()+
            xlab("Date")+
-           ylab("Meters/Second")+
-           theme_igray()
+           ylab("Meters/Second")
 
-ggplotly(g1)
+g1
 
 ```
 
@@ -153,11 +115,11 @@ _Quick Exercise_ Repeat the above analysis for women's world record progression.
 
 Many websites have created Application Programming Interfaces, which allow the user to directly communicate with the website's underlying database without dealing with the intermediary web content. These have been expanding rapdily and are one of the most exciting areas of development in data access for data science. 
 
-Today, we'll be working with two APIs:  Zillow and the American Community Survey from the census. Please go to: `http://www.census.gov/developers/` and click on "Get a Key" to get your census key. Similarly, go to: `http://www.zillow.com/howto/api/APIOverview.htm` to get your key from Zillow. 
+Today, we'll be working with the American Community Survey from the census. Please go to: `http://www.census.gov/developers/` and click on "Get a Key" to get your census key. 
 
 *YOU NEED TO PAY ATTENTION TO TERMS OF USE WHEN USING APIS. DO NOT VIOLATE THESE.*
 
-With these keys in hand, we can interact with these various databases. Today, we're going to take a look at home prices as a function of income and education level for all of the zip codes in Davidson County TN. This section was inspired by this post: https://notesofdabbler.wordpress.com/2013/12/25/exploring-census-and-demographic-data-with-r/. 
+With these keys in hand, we can interact with these various databases. Let's say we have information on zip codes for students, and we want to know their likely income level. We can do this by using the American Community Survey API. 
 
 ## Zip Code Level Data from the American Community Survey
 
@@ -224,7 +186,10 @@ county_educ=acs.fetch(geography=select_zip,
                       col.names="pretty",verbose=T)
 
 acs.colnames(county_educ)
+```
 
+## Organizing ACS data
+```{r}
 ## Proprtion of individuals at college or above=
 ## number with college degree/
 ## total number
@@ -238,7 +203,11 @@ prop_coll_above<-divide.acs(numerator=(county_educ[,15]+
                                       county_educ[,35]),
                             denominator=county_educ[,1]
 )
+```
 
+
+## Family Income Data
+```{r}
 
 # 19001-- family income           
 county_income<-acs.fetch(geography=select_zip, 

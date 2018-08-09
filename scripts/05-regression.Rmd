@@ -1,6 +1,6 @@
 ---
 title: "Using Regression for Prediction"
-output: html
+output: html_document
 ---
 
 ## Overview
@@ -13,7 +13,7 @@ $$Y=\beta_0+\beta_1 x_1 +\beta_2 x_2+ ... \beta_k x_k + \epsilon$$
 
 It's just a linear, additive model. Y increases or decreases as a function of x, with multiple x's included. $\epsilon$ is the extent to which an individual value is above or below the line created. 
 
-Let's say that you've got some consumer data and you want to target those families that are likely to spend between  \$100and \$500 a month on dining out. We would need to be able to predict which families would spend in that range based on observable characteristics like family size, income and family type. 
+Let's say that you've got some student data and you want to target those students that may struggle in math. The intervention could be targeted based on what we know about students, much of which reflects broader inequalities in our education system, such as the relationship between SES and parental education and test scores. By intervening early we may help to reduce those inequalities. 
 
 We're going to be working with data on high school students from the Educational Longitudinal Study. Our goal will be to predict their math scores based on student characteristics. 
 
@@ -112,15 +112,20 @@ els_train%>%summarize(mean(byses_p,na.rm=TRUE))
 
 ```{r}
 mod3<-lm(bynels2m~byses_p+
-           as.factor(bypared),
+         as.factor(bypared),
          data=els_train
          );summary(mod3)
 ```
 
+This changes the coefficient AND its interpretation. Now, for every one percent increase in SES, math scores are predicted to increase by `r round(mod3$coefficients[2],2)`. Linear transformations will not change the statistical significance (t value), but non linear transformations like the one we just did will, as you can see. Does this change the RMSE? 
 
-
+```{r}
+modelr::rmse(mod3,els_train)
+```
+ It looks like it actually decreases it a bit. 
 
 ## Testing and Training
+
 The essence of prediction is discovering the extent to which our models can predict outcomes for data that *does not come from our sample*. Many times this process is temporal. We fit a model to data from one time period, then take predictors from a subsequent time period to come up with a prediction in the future. For instance, we might use data on team performance to predict the likely winners and losers for upcoming soccer games. 
 
 This process does not have to be temporal. We can also have data that is out of sample because it hadn't yet been collected when our first data was collected, or we can also have data that is out of sample because we designated it as out of sample.
@@ -130,15 +135,23 @@ The data that is used to generate our predictions is known as
 
 That data that is used to validate our predictions is known as *testing* data. With testing data, we take our trained model and see how good it is at predicting outcomes using out of sample data. 
 
-One very simple approach to this would be to cut our data in half. We could then train our model on half the data, then test it on the other half. This would tell us whether our measure of model fit (e.g. rmse, auc) is similar or different when we apply our model to out of sample data. That's what we've done today: we have only been working with half of our data. 
+One very simple approach to this would be to cut our data in half. We could then train our model on half the data, then test it on the other half. This would tell us whether our measure of model fit (e.g. rmse, auc) is similar or different when we apply our model to out of sample data. That's what we've done today: we have only been working with half of our data-- the training half. 
 
+The testing data (which is a random half of the original dataset) is stored as `els_test`. Since we transformed a variable in the training dataset, we'll need to do the same in the testing dataset. 
+
+```{r}
+load("els_test.Rdata")
+els_test<-els_test%>%mutate(byses_p=percent_rank(byses1)*100)
+```
+
+Now we can use the model we trained (model 3) on the testing data.
 
 ```{r}
 ## Generate a prediction from the testing dataset
-rmse_test_1<-modelr::rmse(mod2,els_test);rmse_test_1
+rmse_test_1<-modelr::rmse(mod3,els_test);rmse_test_1
 ```
 
-Notice that this is higher than the value for our training dataset: our training model doesn't predict out of sample as well as it predicts in sanmple. This is a pattern you'll see again and again. 
+Notice that this is different than the value for our training dataset. 
 
 ## Thinking about regression for prediction
 
