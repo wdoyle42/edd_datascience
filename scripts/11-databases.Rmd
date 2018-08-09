@@ -167,10 +167,9 @@ req1_df<-dbFetch(req1,n=-1)
 dbClearResult(req1)
 
 head(req1_df)
-
-
 ```
 
+The resulting dataset has lots of short delays, those less than an hour. Let's say we're interested in finding out which airlines have more delays of more than an hour. We need to use the WHERE command to figure this out. 
 
 ```{r}
 #New request: which carriers have longer delays? 
@@ -197,10 +196,11 @@ delay_summary<-req1_df%>%
 delay_summary
 ```
 
+In this year, if flights were to be delayed by more than an hour, Hawaiian Airlines had the longest subsequent delays. 
 
 
 ```{r}
-#New request: which carriers have longer delays? 
+#New request: which carriers have the most long-distance delays? 
 req1_text<-"SELECT a.carrier, a.name, f.distance 
             FROM flights f 
             JOIN airlines a ON a.carrier=f.carrier 
@@ -224,8 +224,6 @@ dist_flights<-req1_df%>%
 dist_flights
 ```
 
-
-*Quick Exercise:  Get data on airlines who fly at least 1000km, and number of flights over that length*
 
 We can combine multiple tables to answer questions about how multiple factors, like weather and carrier, might be related. 
 
@@ -280,73 +278,6 @@ It's good practice to disconnect from a database when done.
 ## Disconnect when done
 dbDisconnect(con)
 ```
-
-`dplyr` also has a way to connect with a database. The advantage AND disadvantage of dplyr is that it's not trying to be like SQL, although it has a full suite of SQL commands plus sql translations built in. 
-
-```{r}
-# The dplyr way:
-
-con <- DBI::dbConnect(RSQLite::SQLite())
-
-copy_to(con, nycflights13::flights, "flights",
-  indexes = list(
-    c("year", "month", "day"), 
-    "carrier", 
-    "tailnum",
-    "dest"
-  ),
-  temporary=FALSE
-)
-
-# Example only: what you might need for a real company database
-# con <- DBI::dbConnect(RMySQL::MySQL(), 
-#   host = "database.rstudio.com",
-#   user = "hadley",
-#   password = rstudioapi::askForPassword("Database password")
-#)
-
-```
-
-With a table in memory, we can change it to a tibble and do all the fun `dplyr` stuff. 
-
-```{r}
-## Average flight delay for United
-ua_flight_delay <- tbl(con, "flights")%>%tbl_df()%>%filter(carrier=="UA")%>%summarize(mean(arr_delay,na.rm=TRUE))
-```
-
-
-We can also ask for SQL translations of dplyr commands:
-```{r}
-show_query(tally(tbl(con, "flights")))
-```
-
-
-A famous database in this area is the Lahman database. This contains data on every baseball player who's played Major League baseball since 1871 (more or less). Even though the wrong teams played in the World Series this year (ie not my beloved San Francisco Giants) I still wanted to show you how this might work. 
-
-```{r}
-## Because it's October
-
-library(Lahman)
-
-batting<-Batting%>%
-  tbl_df%>%
-  filter(yearID==2015,AB>100)%>%
-  select(playerID,AB,H)
-
-master<-Master%>%
-  tbl_df()%>%
-  select(playerID,nameFirst,nameLast,nameGiven)
-
-bat_full<-left_join(batting,master,by="playerID")
-
-bat_full<-bat_full%>%
-  mutate(bat_avg=H/AB)%>%
-  arrange(-bat_avg)
-## Compare to: http://www.baseball-reference.com/leagues/MLB/2016-batting-leaders.shtml
-## Why different?
-```
-
-*Quick Exercise* Generate a table with batting averages for every professional player who played college ball for Vanderbilt in the last 20 years. 
 
 ## MY ADVICE
 
