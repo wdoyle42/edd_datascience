@@ -9,7 +9,6 @@ output: github_document
 K means clustering is an example of *unsupervised learning*, a set of techniques used to identify patterns of association within a dataset that are not driven by the analyst. This technique is employed when it is strongly suspected that there are latent classifications of individuals in a dataset, but those classifications are unknown. 
 
 There are many types of unsupervised learning---this is a very active area of development in data science. K-means is among the simplest, and is relatively easy to explain. It's also pretty good--- it tends to get decent answers. K-means proceeds by finding some number (K) groups of observations that are quite similar to one another, but quite different from other groups of observations. Similarity in this case is defined as having minimum variation within the group. The way this is done in practice is to start by randomly assigning each observation to a cluster, then to calculate the cluster centroid, which is the means of the variables used for the algorithm. Next, assign each observation to the cluster centroid which is closest to its means. This continues until no more changes are possible. 
-
 If the data have clear underlying partitions, then the cluster assignment will be pretty stable. If not, then each time you run this algorithm, you could get different answers. There are solutions to this problem we'll go over, but please remember this basic fact about K-means clustering, which is different than any of the algorithms we cover in this class:
 
 *K MEANS CLUSTERING IN ITS BASIC FORM CAN GIVE YOU DIFFERENT ANSWERS EACH TIME YOUR RUN IT*.
@@ -33,139 +32,13 @@ library(knitr)
 library(modelr)
 ```
 
-The SFO survey data is pretty standard survey data, the kind you might get back from surveymonkey or qualtrics or other similar survey software. To work with this data, many of the categorical responses need to be changed to dummy variables. The `dummy` package can take a categorical response and turn it into a series of dummy variables. We can then grab those dummy variables and add them to the original dataset. I used the codebook to figure out what the various responses mean. 
+The SFO survey data is pretty standard survey data, the kind you might get back from surveymonkey or qualtrics or other similar survey software. 
 
-First, I load the dataset.
+First, I load the dataset containing individual characteristics. We'll load the dependent variables later.
 ```{r}
-#customer survey from SFO
-sf<-read_csv("sfo_survey.csv")
-names(sf)<-tolower(names(sf))
+load("sf_cluster.RData")
+sfo<-sf_cluster%>%select(-sf.runid)
 ```
-
-Now, I'm going to use the `dummy` command from the `dummies` package to convert a factor variable (in this case, `purpose`, the purpose of the trip, to a series of dummy variables, which will be stored in a matrix called `purpose_mat`. Each column of `purpose_mat` has a binary variable, one for each level of the original factor variable. 
-
-```{r}
-#Why are you traveling? 
-sf$purpose<-sf$q2_1
-table(sf$purpose)
-  purpose.mat<-dummy(sf$purpose)
-  sf$business<-purpose.mat[,1]
-  sf$pleasure<-purpose.mat[,2]
-  sf$relatives<-purpose.mat[,3]
-```
-
-Next I repeat this process for the variable measuring how the person arrived at the airport. 
-
-```{r}
-#How did you get here?
-sf$how_get<-sf$q3_1
-  how_get.mat<-dummy(sf$how_get)
-  sf$drove<-how_get.mat[,1]
-  sf$dropped.off<-how_get.mat[,2]
-  sf$connect<-how_get.mat[,3]
-  sf$taxi<-how_get.mat[,4]
-```
-  
-I'm going to convert a few variables to binary using a simpler logic approach, where true evaluates to 1 and everthing else is 0.   
-  
-```{r}  
-#Checked Bags?
-sf$bags<-0
-  sf$bags[sf$q4a==1]<-1
-
-#Buy something in store?
-sf$purchase<-0
-  sf$purchase[sf$q4b==1]<-1
-
-#Ate at a restaurant?
-sf$resta<-0
-  sf$resta[sf$q4c==1]<-1
-
-#Frequent Flyer?
-sf$freq_fly<-sf$q7
-
-#Just today
-sf$infreq<-0
-  sf$infreq[sf$freq_fly==1]<-1
-
-#Not very frequent
-sf$mod_travel<-0
-  sf$mod_travel[sf$freq_fly%in% c(2,3,4) ]<-1
-
-#Very Fequent
-sf$freq<-0
-  sf$freq[sf$freq_fly>=5]<-1
-```
-
-Age has a series of categories, which I simplify below. 
-```{r}
-#Age
-sf$age<-sf$q19
-
-#24 or less
-sf$age24less<-0
-sf$age24less[sf$age%in%c(1,2)]<-1
-
-#25-44
-sf$age2544<-0
-sf$age2544[sf$age%in%c(3,4)]<-1
-
-#45-64
-sf$age4564<-0
-sf$age4564[sf$age%in%c(5,6)]<-1
-
-#65+
-sf$age65p<-0
-sf$age65p[sf$age==7]<-1
-
-#Male
-sf$gender<-sf$q20
-sf$male<-0
-sf$male[sf$gender==1]<-1
-
-#income
-sf$income<-sf$q21
-income.mat<-dummy(sf$income)
-sf$inc50less<-income.mat[,2]
-sf$inc50100<-income.mat[,3]
-sf$inc100150<-income.mat[,4]
-sf$inc150p<-income.mat[,5]
-
-#Outcomes: problems
-sf$problems<-sf$q16
-sf$hadproblem<-0
-sf$hadproblem[sf$problems==1]<-1
-
-#Outcomes: outstanding aiprot
-sf$outstanding<-0
-sf$outstanding[sf$q8n==5]<-1
-
-```
-
-Now I'm ready to put together my analysis data set. 
-```{r}
-#Clustering data
-clus.data<-data.frame(sf$business,
-                      sf$pleasure,
-                      sf$relatives,
-                      sf$infreq,
-                      sf$mod_travel,
-                      sf$freq,
-                      sf$bags,
-                      sf$male,
-                      sf$inc50less,
-                      sf$inc50100,
-                      sf$inc100150,
-                      sf$inc150p,
-                      sf$age24less,
-                      sf$age2544,
-                      sf$age4564,
-                      sf$age65p,
-                      sf$purchase,
-                      sf$resta
-                      )
-```
-## Quick Exercise: Add in a dummy variable for international flights only
 
 # Determining the Number of Clusters
 
@@ -175,11 +48,11 @@ The `stepFlexClust` command can be helpful here. What it will do is to run a clu
 
 ```{r}
 #Test to see how many clusters are needed
-c.test<-stepFlexclust(clus.data,k=2:7,nrep=20)
+c_test<-stepFlexclust(sfo,k=2:7,nrep=20)
 
-c.test
+c_test
 
-plot(c.test)
+plot(c_test)
 ```
 
 It's not super clear where the cutoff should be for this data. The distances drop off by about 170 for a few steps, then decline to a drop of 150 or so. I'm going to choose 4 as the number of clusters, but it's fairly arbitrary. In general, a smaller number will result in a more tractable and stable solution. 
@@ -190,11 +63,14 @@ I'm going to run the `cclust` command twice, specifying that it should use 4 clu
 
 ```{r}
 # Cluster analysis
-c1<-cclust(clus.data,k=4,dist="manhattan")
+c1<-cclust(sfo,k=4,dist="manhattan")
 c1
 
-c1<-cclust(clus.data,k=4,dist="manhattan")
+## And again, see if results are stable
+c1<-cclust(sfo,k=4,dist="manhattan")
 c1
+
+
 ```
 
 Hmm, this gave us WAY different answers. Here's why-- the data aren't strongly separated by various groups, so it depends where the starting points were. 
@@ -202,7 +78,7 @@ Hmm, this gave us WAY different answers. Here's why-- the data aren't strongly s
 To visualize this, we'll use the `bootFlexclust` command, which will run the clustering algorithm on a subset of the data a certain number of times. This is called bootstrapping, and it shares many properties in common with cross-fold validation from last time. I'm going to do this for four different numbers of groups, from 2 through 5, then visualize the results. 
 
 ```{r}
-c1a<-bootFlexclust(x=clus.data,k=c(2,3,4,5),nboot = 50,verbose = TRUE)
+c1a<-bootFlexclust(x=sfo,k=c(2,3,4,5),nboot = 50,verbose = TRUE)
 
 plot(c1a)
 
@@ -216,17 +92,12 @@ Okay, so that's no good. What to do? Well, one thing to do is to apply this to a
 The `kmeanspp` (stands for k-means ++) command will repeat the kmeans clustering algorithm with different starting points until it converges on a stable solution. It basically repeats the process we saw above, but with the intention of getting to a stable solution. 
 
 ```{r}
-c2<-kmeanspp(clus.data,k=4,start="random",iter.max=1000,nstart=50)
+c2<-kmeanspp(sfo,k=4,start="random",iter.max=1000,nstart=50)
 table(c2$cluster)
-
-c3<-kmeanspp(clus.data,k=5,start="random",iter.max=1000,nstart=50)
-table(c3$cluster)
 
 ```
 
 Notice how the sample sizes in each group are identical, although the group numbers (which are arbitrary) are different after each run. 
-
-*Quick Exercise:* run again with 5 clusters
 
 # Understanding cluster assignments
 
@@ -234,18 +105,16 @@ So now what? We need to figure out what these clusters mean by inspecting them a
 
 ```{r}
 #Add predictions
-clus.data$cluster<-c2$cluster
+sfo$cluster<-c2$cluster
 
 #Examine relationship of cluster assignment to chars.
 mycols<-c("Group 1","Group 2", "Group 3","Group 4")
 
 #Frequency of travel
-pt<-prop.table(table(clus.data$cluster,clus.data$sf.freq),margin=1)
+pt<-prop.table(table(sfo$cluster,sfo$sf.freq),margin=1)
 ```
 
-
 To create a nice table, we need to generate both row names and column names. We'll also convert to percentages. 
-
 
 ```{r}
 rownames(pt)<-mycols
@@ -265,7 +134,7 @@ It looks like one group has more frequent travelers than the others
 
 
 ```{r}
-pt<-prop.table(table(clus.data$cluster,clus.data$sf.mod_travel),margin=1)
+pt<-prop.table(table(sfo$cluster,sfo$sf.mod_travel),margin=1)
 
 rownames(pt)<-mycols
 pt<-pt*100
@@ -282,14 +151,14 @@ That samge group also has many more moderate travelers.
 
 ```{r}
 #Age
-prop.table(table(clus.data$cluster,clus.data$sf.age2544),margin=1)
+prop.table(table(sfo$cluster,sfo$sf.age2544),margin=1)
 
-prop.table(table(clus.data$cluster,clus.data$sf.age4564),margin=1)
+prop.table(table(sfo$cluster,sfo$sf.age4564),margin=1)
 ```
 
 ```{r}
 #Reason for travel
-pt<-prop.table(table(clus.data$cluster,clus.data$sf.business),margin=1)
+pt<-prop.table(table(sfo$cluster,sfo$sf.business),margin=1)
 
 rownames(pt)<-mycols
 pt<-pt*100
@@ -304,13 +173,18 @@ kable(pt,row.names = TRUE,col.names = c("Not a business traveler","Business trav
 
 Now we're getting somehwere: One group is overwhelmingly composed of business travlers, and is much more likely to include frequent or moderate travelers. 
 
+Let's look at income:
 ```{r}
 
 #Income
-prop.table(table(clus.data$cluster,clus.data$sf.inc150p),margin=1)
+prop.table(table(sfo$cluster,sfo$sf.inc150p),margin=1)
+```
 
+
+And now at whether they checked their bags
+```{r}
 #Checked bags?
-prop.table(table(clus.data$cluster,clus.data$sf.bags),margin=1)
+prop.table(table(sfo$cluster,sfo$sf.bags),margin=1)
 ```
 The clearest separation by far is the business travel difference, with some differences by frequency of travel as well.  
 
@@ -318,7 +192,7 @@ The clearest separation by far is the business travel difference, with some diff
 ```{r}
 #summarize groups
 
-var.means<-colMeans(clus.data)
+var.means<-colMeans(sfo)
 
 ## Drop the cluster means
 var.means<-var.means[-(length(var.means))]
@@ -332,7 +206,7 @@ First, we do our normal `summarize` command, but this time over every variable i
 
 ```{r}
 #Summarize groups by cluster
-sum1<-clus.data%>%group_by(cluster)%>%summarize_all(funs(mean),na.rm=TRUE)
+sum1<-sfo%>%group_by(cluster)%>%summarize_all(funs(mean),na.rm=TRUE)
 sum1
 ```
 
@@ -340,7 +214,7 @@ Now we'll `gather` everything, so that we have just two variables: the proportio
 ```{r}
 sum2<-gather(sum1,-cluster,key=variable,value=value)
 sum2
-sum_total<-clus.data%>%summarize_all(funs(mean))
+sum_total<-sfo%>%summarize_all(funs(mean))
 
 sum_total<-gather(sum_total,key=variable,value=overall_mean)
 sum2<-left_join(sum2,sum_total,by="variable")
@@ -388,11 +262,6 @@ g1<-g1+facet_wrap(~cluster)
 g1
 ```
 
-Group1 = Aunt Betsy Going to Visit Parents
-Group 2= Professional Vacationers: Bloggers and Bougie Grandmas
-Group 3= Once a year Disney family "strung out parents"
-Group 4= Sad Business Men
-
 
 ## Quick Exercise: Name these clusters for me
 
@@ -400,6 +269,14 @@ Group 4= Sad Business Men
 
 Once you have clusters, then you can use these as independent variables to predict various outcomes. For instance, in our data, which clusters are likely to have problems in the airport? 
 We'll use a logistic regression to see which groups are more likely to report having a problem.  
+
+
+```{r}
+load("sf_complete.RDAta")
+sf<-sf%>%select(hadproblem,outstanding)
+sf<-bind_cols(sf,sfo)
+```
+
 
 ```{r}
 #Modeling: figure out which clusters are associated with different outcomes
@@ -449,7 +326,6 @@ g1
 
 The plot shows which groups are predicted to report a problem, and which ones are more likely to say they had an outstanding experiences. Does this make sense? 
 
-## Quick Exercise: Create a model for found it easy to get around airport
 
 
 

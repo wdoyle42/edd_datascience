@@ -23,7 +23,7 @@ library(Metrics)
 
 ## Dataset for this week
 
-We will be working with a dataset put together by the census bureau that summarizes the characteristics of the 3,088 counties in the United States. 
+We will be working with a dataset put together by the Census Bureau that summarizes the characteristics of the 3,088 counties in the United States. 
 
 ```{r data}
 load("pd.Rdata")

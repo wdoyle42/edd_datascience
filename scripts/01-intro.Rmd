@@ -10,14 +10,11 @@ Here's what we need to get done today:
 1. Introductions  
 2. Installing R
 3. Installing Rstudio
-4. Installing git
-5. Getting set up on GitHub
-6. Initializing everyone's github repos
-7. hello_world.Rmd
+7. Learning the basic verbs of data analysis
 
 ## Introductions
 
-We need three basic sets of tools for this class. We will need `R` to analyze data. We will need `RStudio` to help us interface with R and to produce documentation of our results. Last, we will need `git` and GitHub to communicate our results to the wider world.  
+We need two basic sets of tools for this class. We will need `R` to analyze data. We will need `RStudio` to help us interface with R and to produce documentation of our results. 
 
 ## Installing R
 
@@ -45,6 +42,9 @@ Open the `01-Intro.Rmd` file. In Rstudio, go to File-->Open, then find the `01-I
 From a .Rmd file you can generate html documents, pdf documents, word documents, slides . . . lots of stuff. All class notes will be in .Rmd. All assignments will be turned in as .Rmd files, and your final project? You guessed it, .Rmd. 
 
 In the `01-Intro.Rmd` file you'll notice that there are three open single quotes in a row, like so: ` ``` ` This indicates the start of a "code chunk" in our file. The first code chunk that we load will include a set of programs that we will need all semester long.  
+
+
+## R Packages
 
 When we say that R is extensible, we mean that people in the community can write programs that everyone else can use. These are called "packages." In these first few lines of code, I load a set of packages using the library command in R. The set of packages, called `tidyverse` were written by Hadley Wickham and play a key role in his book.  To install this set of packages, simply type in `install.packages("tidyverse")` at the R command prompt. 
 
@@ -130,7 +130,6 @@ sc%>%filter(instnm=="Vanderbilt University")
 
 sc%>%filter(instnm=="Vanderbilt University")%>%select(instnm,adm_rate,sat_avg )
 ```
-
 
 This is actually pretty powerful- we can quickly learn a lot just by looking at individuals. We can also get groups of institutions by specifying the characteristics of institutions we'd like to look at. For instance, let's look at institutions with admission rates of less than 10 percent. We'll then select three characteristics: name, admit rate and average SAT scores. Then we'll order the result by SAT scores. 
 

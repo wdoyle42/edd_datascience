@@ -38,6 +38,7 @@ library(rvest)
 library(acs)
 library(lubridate)
 library(noncensus)
+library(tigris)
 ```
 
 
@@ -63,9 +64,8 @@ r_home
 moby_url = url("http://www.gutenberg.org/files/2701/2701-h/2701-h.htm")
 # reading the content (first 1500 lines)
 moby_dick = readLines(moby_url, n = 1500)
-moby_dick[1160:1168]
+moby_dick[1205:1220]
 ```
-
 
 # Scraping web tables
 
@@ -125,17 +125,25 @@ With these keys in hand, we can interact with these various databases. Let's say
 
 The first step is to create a list of all zip codes in Davidson County. We can do this by using another dataset that includes a comprehensive listing of zip codes by county and city. 
 
+We start by using the lookup_code from the `tigris` package to get the fips codes for Davidson County in TN (Davidson is home to Vanderbilt).
 ```{r}
 ## Look up fips code for county
 lookup_code("TN","Davidson") 
 
 state_fips<-"47"
 county_stub<-"037"
+```
 
+Next, we'll combine the state and county fips into a single object
+
+```{r}
 county_fips<-paste0(state_fips,county_stub)
+```
 
+```{r}
 # Get dataset that matches all zip codes to cities, counties and states. 
 county_to_zip<-read_csv("http://www2.census.gov/geo/docs/maps-data/data/rel/zcta_county_rel_10.txt")
+save(county_to_zip,file="county_to_zip.Rdata")
 
 #easier names to work with
 names(county_to_zip)<-tolower(names(county_to_zip))
@@ -172,10 +180,6 @@ acs_key<-my_acs_key
 # b15002: education of pop over 25, by sex 
 # b19001: household income over last 12 months
 
-get_acs_data<-TRUE
-
-if (get_acs_data==TRUE){
-  
 api.key.install(acs_key, file = "key.rda")
 
 select_zip<-geo.make(zip.code=ziplist)
@@ -189,6 +193,9 @@ acs.colnames(county_educ)
 ```
 
 ## Organizing ACS data
+
+The trick with ACS data is organizing it in a way that's going to make sense. For us to get the proportion of indivudals with a college degree or more, we're going to need to take the numbers of people who are in each of the various age levels for education, and then divide by the total number of people in the zip code. Below I include code to calculate the proportion of individuals in each zip code who have at least a bachelor's degree. 
+
 ```{r}
 ## Proprtion of individuals at college or above=
 ## number with college degree/
@@ -235,11 +242,10 @@ county_df<-tibble(substr(geography(county_educ)[[1]],7,11),
 # Give it easy to use names
 names(county_df)<-c("zip","college_educ","income_75")
 save(county_df,file="dav.RData")
-}else{
-  load("dav.RData")
-}
 
 head(county_df)
 ```
 
 _Quick Exercise_ Pull table B23001 "Sex by Age by Employment Status for the Population 16 and over" from ACS. 
+
+This resource is amazingly helpful. It means that with a list of zip codes you can get a huge amount of information about the area where the individual resides, including education, housing, income, medical care and other topics. 
