@@ -135,7 +135,6 @@ za_train<-za_train%>%
 
 Let's create a table that shows the predictions of our model against what actually happened
 ```{r}
-
 pred_table<-table(za_train$got_pizza,za_train$pred_lm_out)
 
 pred_table
@@ -143,8 +142,6 @@ pred_table
 prop.table(pred_table)
 rownames(pred_table)<-c("Predicted 0","Predicted 1")
 colnames(pred_table)<-c("Actually 0","Actually 1")
-
-
 ```
 
 ```{r}

@@ -1,5 +1,7 @@
 ---
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 # Welcome to Data Science! {#intro}
 
@@ -54,11 +56,19 @@ To run the code below in R, you can:
 - In OS X, place the cursor in the code chunk and hit `cmd+shift+enter`
 - In Windows, place the cursor in the code chunk and hit `ctrl+shefit+enter`
 
+# This section prints the number 4
+```{r}
+2+2
+```
+
+
+
 ```{r scorecard} 
 ## Clear environment
 rm(list=ls())
 ## Get necessary libraries-- won't work the first time, because you need to install them!
 library(tidyverse)
+
 ```
 
 Now we're ready to load in data. The data frame will be our basic way of interacting with everything in this class. The `sc` data frame contains information from the college scorecard on 127 different colleges and univeristies. 
@@ -69,7 +79,6 @@ However, we first need to make sure that R is looking in the right place. When y
 ## Load in the data
 load("college.Rdata")
 ```
-
 
 Here are the variables in the `college.Rdata` dataset:
 
@@ -107,16 +116,16 @@ sc
 
 ## This is commented as you might not always want to run it. Delete the "#" sign below in order to run the command. 
 
-#View(sc)
+View(sc)
 ```
 
 *Filter, Select, Arrange*
 
 In exploring data, many times we want to look at smaller parts of the dataset. There are three commands we'll use today that help with this. 
 
--`filter` selects only those cases or rowsthat meet some logical criteria. 
+-`filter` selects only those cases or rows that meet some logical criteria. 
 
--`select` selects only those variables or coloumns that meet some criteria
+-`select` selects only those variables or columns that meet some criteria
 
 -`arrange` arranges the rows of a dataset in the way we want. 
 
@@ -135,7 +144,8 @@ This is actually pretty powerful- we can quickly learn a lot just by looking at 
 
 ```{r}
 ## Just colleges with low admit rates: order by sat scores (- sat_avg gives descending)
-sc%>%filter(adm_rate<.1)%>%select(instnm,adm_rate,sat_avg)%>%arrange(-sat_avg)
+sc%>%filter(adm_rate<.1)%>%select(instnm,adm_rate,sat_avg)%>%
+  arrange(-sat_avg)
 ```
 
 *Summarizing Data*

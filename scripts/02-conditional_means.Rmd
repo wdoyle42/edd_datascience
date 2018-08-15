@@ -40,14 +40,25 @@ load("pd_lab_explain.Rdata")
 #View(lab_explain)
 ```
 
-*Quick Exercise: What's per capita income in Los Angeles County, CA?*
+## Filter and select
+```{r}
+pd%>%filter(county=="Davidson County, TN")%>%
+  select(county,percapinc.2012)
+
+pd%>%filter(coll_grad_pc>30)%>%
+  select(county,coll_grad_pc,percapinc.2012)%>%
+  arrange(-percapinc.2012)
+
+```
+
+
+*Quick Exercise: What's per capita income in Los Angeles County, CA in 2012?*
 
 ## Dependent Variable
 
 Our working example will be based on predicting income in a given county. Suppose we want to know what income level we can expect for a geographic area based on observed characteristics, such as the proportion of the population with a bachelor's degree. How would we predict the income based on what we know about the geographic area? 
 
 Let's begin by plotting the data to see what it looks like. To do this I need to first rank the counties by income. To create a rank variable that will be stored in the `pd` dataset, I use the `mutate` command. This creates a variable based on some calculation then stores it in the same dataset. I'm then going to plot incomes for each county in descending rank order. Using the `plotly` library I can make this interactive so we know which counties we're talking about. 
-
 
 This code creates a new variable called percapinc_rank, which ranked all counties on the basis of their income.
 ```{r simple_plots}
@@ -60,7 +71,6 @@ The next code will create a graphic for us. We will be using ``ggplot` to make a
 
 ```{r}
 ## Plot by rank
-
 gg<-ggplot(data=pd, aes(x=percapinc_rank,
                          y=percapinc.2010,
                          text=county))
@@ -97,7 +107,6 @@ gg_p<-ggplotly(gg)
 
 gg_p
 ```
-
 
 ## Unconditional Means
 
@@ -182,7 +191,7 @@ pd<-pd%>%group_by(coll_grad_level)%>% ## Group by predictor
   mutate(pred_income_college_rank=rank(pred_income_college,ties.method="random"))
 ```
 
-To visualize this. 
+To visualize this we can use a similar graphic as before: 
 
 ```{r}
 pd%>%group_by(coll_grad_level)%>% ## Group by predictor
@@ -218,3 +227,36 @@ rmse_cond_mean_one
 *Quick Exercise: Calculate per capita income as a function of the proportion of the county with a high school education*
 
 We can continue "binning" the data to define averages by more and more subgroups. For instance, we might want to calculate the average income by education AND home ownership rate.
+
+## New Variable Home Ownership Rate
+```{r}
+## Create a variable for quartiles of college education
+pd<-pd%>%mutate(homeown_rate_level=ntile(homeown_rate,4))
+```
+
+```{r}
+pd%>%group_by(homeown_rate_level)%>% ## Group by predictor
+  ##Calculate mean at each level of predictor
+  summarise(pred_income_homeown_rate=mean(percapinc.2010))
+```
+
+
+```{r}
+pd<-pd%>%group_by(coll_grad_level,homeown_rate_level)%>% ## Group by predictor
+  ##Calculate mean at each level of predictor
+  mutate(pred_income_coll_and_homeown=mean(percapinc.2010))%>% 
+  ## Ungroup
+  ungroup()%>% 
+  #Rank by prediction, with ties sorted randomly
+  mutate(pred_income_coll_and_homeown_rank=rank(pred_income_coll_and_homeown,
+                                                ties.method="random"))
+```
+
+```{r}
+rmse_cond_mean_two<-rmse(pd$percapinc.2010,pd$pred_income_coll_and_homeown)
+rmse_cond_mean_two
+```
+
+
+
+

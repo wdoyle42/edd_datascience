@@ -10,35 +10,18 @@ output: html_document
 library(tidyverse)
 library(plotly)
 library(shiny)
+library(leaflet)
 ```
 
-## Plotly: Descriptives
+## Intro
 
 
 
 ```{r}
-load("els.Rdata")
+load("pd.Rdata")
 ```
 
-
-```{r}
-els_math<-els%>%select(byses1,bynels2m)%>%filter(is.na(byses1)==FALSE)%>%
-  mutate(ses_q=ntile(byses1,4))%>%
-  group_by(ses_q)%>%
-  summarize(mean_math=mean(bynels2m))
-
-gg<-ggplot(els_math,aes(x=ses_q,y=mean_math,fill=as.factor(ses_q)))
-gg<-gg+geom_bar(stat="identity")
-gg
-ggplotly(gg)
-```
-
-```{r}
-
-
-```
-
-
+## Plotly Descriptives
 
 ## Plotly: Multivariate Graphics
 
