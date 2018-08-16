@@ -18,7 +18,6 @@ We will cover several different ways you can get data from the web
 
 1. Directly downloading web pages via the `url()` command. 
 1. Scraping simple web tables via `read_html()` and `html_table()` command
-1. Scraping complex web tables via `read_html()` and `html_nodes()`
 1. Interacting with Application Programming Interfaces (APIs) via R libraries that have been designed as "wrappers" for these interfaces, like the awesome `acs` library and the `tigris` library for geographic shapes. 
 1. Interacting with APIs directly, 
 
@@ -44,7 +43,7 @@ library(tigris)
 
 ## API keys
 
-You will also need two API keys. 
+You will also need an API key. 
 
 * The Census API, available here: https://api.census.gov/data/key_signup.html 
 
@@ -77,11 +76,14 @@ marathon_wiki = "https://en.wikipedia.org/wiki/Marathon_world_record_progression
 # Get the page, pull the tables via html_table
 marathon <- read_html(marathon_wiki)%>%html_table()
 
+
 #Men's is the first table
 marathon<-tbl_df(data.frame(marathon[[1]]))
 
 #Convert time to seconds
-marathon<-marathon%>%mutate(Time2=hms(as.character(Time)))%>%mutate(Time2=period_to_seconds(Time2))
+marathon<-marathon%>%
+  mutate(Time2=hms(as.character(Time)))%>%
+  mutate(Time2=period_to_seconds(Time2))
 
 #Marathons are 42,200 meters long
 marathon$speed<-(4.22e4)/marathon$Time2

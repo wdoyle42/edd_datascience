@@ -14,42 +14,7 @@ library(modelr)
 
 load("els.RData")
 
-
 ```
-
-*Side Note: Factors*
-
-Factors in R denote variables that encompass a set of mutually exclusive and exhaustive categories. When a factor is included in a regression, R will encode it as a series of dummy (binary) variables, one for each level of the factor. The coefficient for each level of the factor is relative to the reference (omitted) category. Let's run a regression of test scores on parental education and see what we get. 
-
-```{r}
-
-## Recode parental education: less than hs,hs, some college, college grad
-
-els<-els%>%
-  mutate(bypared=fct_recode(as.factor(bypared),                                     "Less than HS"="1",
-                               "HS"="2",
-                               "Some College"="3",
-                               "Some College"="4",
-                               "Some College"="5",
-                               "College"="6",
-                               "College"="7",
-                               "College"="8"))
-
-with(els, prop.table(table(bypared)))
-
-## Simplify dataset by dropping missing parental education cases
-els<-els%>%filter(is.na(bypared)==FALSE)
-
-#Conditional Means
-els%>%group_by(bypared)%>%
-  summarize(mean(bynels2m,na.rm=TRUE))%>%
-  slice(1:4)
-
-#Regression
-factor_mod<-lm(bynels2m~bypared,data=els);summary(factor_mod)
-```
-
-The reference for the model (the excluded category) is parents with less than a high school education. Each coefficient is in comparison to this category, indicating how much higher or lower test scores are among students with parents at different levels of education.  
 
 ## Bivariate Regression
 
@@ -66,7 +31,7 @@ g1<-ggplot(data=els,
            aes(x=byses1,y=bynels2m)
            )
 
-g1<-g1+geom_point() # Add points at x and y
+g1<-g1+geom_point(alpha=.5,size=.25) # Add points at x and y
 g1
 ```
 
@@ -107,12 +72,11 @@ Better! Simplifying data can help.
 We can add a regression line to this simpler data
 
 ```{r}
-g1b<-g1a+geom_smooth(method=lm) # Add a line
+g1b<-g1a+geom_smooth(method="lm") # Add a line
 g1b
 ```
 
 This summarizes the basic relationship nicely. We're ready to run the model and get results. 
-
 
 ```{r}
 #First model
@@ -130,14 +94,17 @@ The next step is to add covariates. I'll be working with the variable `bypared` 
 ```{r}
 g2<-ggplot(data=filter(els,is.na(bypared)==FALSE),
             aes(x=byses1,y=bynels2m,
-                color=bypared #notice the color option
+                color=as.factor(bypared) #notice the color option
                 ))
 ## Let's make the dots smaller for readability
 g2<-g2+geom_point(size=.25)
 
+## Changing the Legend
 g2<-g2+theme(legend.position="bottom"  , legend.title = 
                element_blank())
+
 g2<-g2+ylab("Test Scores")+xlab("Socio Economic Status")
+
 g2
 
 ```
@@ -146,13 +113,15 @@ Our  graphic is a bit complex, but shows the intersectionality between SES and p
 
 We can see this same relationship in the model results: 
 
+
+## Using Scatterplots to Explain Models
 ```{r}
 
-#Model 2: with kids
+#Model 2: with parental education
 
 mod_2<-lm(bynels2m~
             byses1+
-            bypared,
+            as.factor(bypared),
           data=els); summary(mod_2)
 
 ```
@@ -164,10 +133,14 @@ els<-els%>%add_predictions(mod_2)%>%rename(pred_mod_2=pred)
 
 g3<-ggplot(els,aes(x=byses1,y=bynels2m))
 g3<-g3+geom_point(alpha=.2,size=.25)
+
 g3<-g3+geom_smooth(data=els,(aes(x=byses1,y=pred_mod_2)))
+
 g3<-g3+xlab("Socio Economic Status")+ylab("Test Scores")
+
 g3
 ```
+
 
 
 As we add more variables to the model, it can get more difficult to plot relationships. One very good option is to plot lines based on a hypothetical set of data. Below, I create a hypothetical set of data that include values of SES across the range of SES, and includes values for every level of `bypared`. I then run predictions from this hypothetical data to get a prediction line for every level of parental education. 
@@ -188,26 +161,26 @@ Now we can plot the result, using the `geom_smooth` layer to give us lines for e
 g4<-ggplot(data=hypo_data,
            aes(x=byses1,
                y=pred,
-               color=fct_reorder(f=bypared,-pred))) #notice color
+               color=fct_reorder(f=as.factor(bypared),-pred))) #notice color
 g4<-g4+geom_smooth(method=lm,se=FALSE)
 g4<-g4+theme(legend.position="bottom",legend.title = element_blank())
-g4<-g4+xlab("Income Rank")+ylab("Predicted Grocery Spending")
+g4<-g4+xlab("Income Rank")+ylab("Math Test Scores")
 g4
 ```
 
 *Question: Based on our motivating example, where should we be advertising?*
 
-To show this in the data we can break it out for every type of child age grouping. This takes advantage of faceting.  
+To show this in the data we can break it out for every type of parental education. 
 
 ```{r}
 ## Resort Parental Education for graphic
 
 els<-els%>%mutate(bypared=fct_reorder(f=bypared,-bynels2m))
 
-g5<-ggplot(els,aes(x=byses1,y=bynels2m, color=bypared))
+g5<-ggplot(els,aes(x=byses1,y=bynels2m, color=as.factor(bypared)))
 g5<-g5+geom_point(alpha=.5,size=.1)
 g5<-g5+geom_smooth(method="lm",color="black")
-g5<-g5+facet_wrap(~bypared,ncol=2)
+g5<-g5+facet_wrap(~as.factor(bypared),ncol=2)
 g5<-g5+xlab("SES")+ylab("Test Scores")
 g5<-g5+theme(legend.position="none") #Suppress legend, not needed
 

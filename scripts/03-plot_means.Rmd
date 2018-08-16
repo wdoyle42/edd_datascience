@@ -21,7 +21,7 @@ library(RColorBrewer)
 library(knitr)
 ```
 
-Next we load in the data, using the `readr` package. Note that this data is saved as comma separated or `csv.` This is an easy file format to recognize. When we use the `readr` package, it gives us some output that says how it interprets the data-- is it a string variable, numeric (float), integer and so on. 
+Next we load in the data.
 
 ## Loading Data 
 ```{r}
@@ -39,7 +39,6 @@ table(at$Attrition)
 table(at$attrit)
 
 table(at$attrit,at$Attrition)
-
 ```
 
 
@@ -76,7 +75,6 @@ gg
 ## Predicting Attrition
 
 Our first prediction will use business travel as a predictor for attrition. There are three categories here-- non travel, travel infrequently, and frequent travel. We'll calculate levels of attrtion at each level and then take a look at the data. 
-
 
 ```{r}
 
@@ -131,10 +129,11 @@ gg
 
 *Quick Exercise: Create a bar plot showing average attrition by department instead of travel*
 
+## Dot Plots
+
 A dot plot can be a good way of displaying conditional means as well. Many times dot plots are more easily understood if they are horizontal, so we'll use `coord_flip` to make it horizontal.
 
 ```{r}
-
 at_sum<-at%>%
   group_by(BusinessTravel)%>%
   summarize(attr_avg=mean(attrit))
@@ -142,7 +141,8 @@ at_sum<-at%>%
 at_sum
 ## Now a dot plot
 gg<-ggplot(at_sum,aes(x=reorder(BusinessTravel,-attr_avg),y=attr_avg))
-gg<-gg+geom_point()
+gg<-gg+geom_point(color="orange",size=5)
+gg<-gg+xlab("Travel")+ylab("Average Attrition")
 gg<-gg+coord_flip()
 gg
 ```
@@ -173,7 +173,7 @@ gg
 ```{r}
 ## Plot it using a dot plot
 gg<-ggplot(at_sum,aes(x=reorder(BusinessTravel,attr_avg),y=attr_avg),color=Gender)
-gg<-gg+geom_point(aes(color=Gender))
+gg<-gg+geom_point(aes(color=Gender),size=5)
 gg<-gg+coord_flip()
 gg
 ```
@@ -181,6 +181,33 @@ gg
 
 
 * Quick Exercise: Create either a bar plot or a dot plot showing attrition by department AND field of education *
+
+_Side_ _Note_: Colors
+
+What if we want to change colors? This is a little tricky for most people at first. `ggplot` thinks in terms of palettes, so you need to associate a palette with a characteristics of the graphic. Below, I replace the default palette with my own ugly one. 
+
+```{r}
+
+## Changing Colors
+mypal<-c("lightblue","orange")
+
+gg<-gg+scale_fill_manual(values =mypal )
+
+gg<-gg+scale_color_manual(values =mypal )
+## Print
+gg
+```
+
+You can also use `RColorBrewer` which has a wide variety of palettes already built. Below I use the qualitative palette creatively named "Set1".
+
+```{r}
+## Another way, using color brewer palettes: 
+gg<-gg+scale_fill_brewer(palette = "Set1")
+
+gg
+
+```
+
 
 ## More Variables: faceting
 
@@ -190,7 +217,8 @@ We can continue this logic with three variables. Now we're going to summarize by
 
 at_sum<-at%>%
   group_by(BusinessTravel,Gender,MaritalStatus)%>%
-  summarize(attr_avg=mean(attrit))
+  summarize(attr_avg=mean(attrit))%>%
+  arrange(-attr_avg)
 
 at_sum
 ```
@@ -209,29 +237,6 @@ gg<-gg+coord_flip()
 gg
 ```
 
-_Side_ _Note_: Colors
-
-What if we want to change colors? This is a little tricky for most people at first. `ggplot` thinks in terms of palettes, so you need to associate a palette with a characteristics of the graphic. Below, I replace the default palette with my own ugly one. 
-
-```{r}
-
-## Changing Colors
-mypal<-c("lightblue","orange")
-
-gg<-gg+scale_fill_manual(values =mypal )
-## Print
-gg
-```
-
-You can also use `RColorBrewer` which has a wide variety of palettes already built. Below I use the qualitative palette creatively named "Set1".
-
-```{r}
-## Another way, using color brewer palettes: 
-gg<-gg+scale_fill_brewer(palette = "Set1")
-
-gg
-
-```
 
 *Quick Exercise: Plot predicted attrition by Education Field, Department and Gender*
 

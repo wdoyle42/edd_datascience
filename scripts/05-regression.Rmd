@@ -19,7 +19,6 @@ We're going to be working with data on high school students from the Educational
 
 ```{r,echo=FALSE}
 rm(list=ls())
-
 library(tidyverse)
 library(forcats)
 library(ModelMetrics)
@@ -37,7 +36,8 @@ load("els_train.RData")
 Our dependent variable will be math scores, stored in this dataset as `bynels2m`. Let's take a look at this variable
 
 ```{r}
-els_train%>%summarize(mean(bynels2m))
+els_train%>%summarize(mean(bynels2m,na.rm=TRUE))
+
 gg<-ggplot(els_train,aes(x=bynels2m))
 gg<-gg+geom_histogram()
 gg
@@ -47,8 +47,6 @@ gg
 gg<-ggplot(els_train,aes(x=bynels2m))
 gg<-gg+geom_density()
 gg
-
-
 ```
 
 
@@ -70,6 +68,7 @@ g1
 
 els_train<-els_train%>%add_predictions(mod1)%>%rename(pred1=pred) #predict using data in memory
  
+## RMSE
 rmse_1<-modelr::rmse(mod1,els_train);rmse_1
 
 ```
@@ -85,8 +84,8 @@ Okay, so we can see that this is somewhat predictive, but we can do better. Let'
 ```{r}
 #Part 2: Multiple regression
 
-mod2<-lm(bynels2m~byses1+
-          as.factor(bypared), 
+mod2<-lm(bynels2m~as.factor(bypared)+
+           byses1,
           data=els_train)
 
 summary(mod2) 
@@ -97,7 +96,7 @@ rmse_2<-modelr::rmse(mod2,els_train); rmse_2
 
 ```
 
-This finding reflects the basic ineuity in our education system: lower income students score lower on math scores. This holds true even if we control for parental education. 
+This finding reflects the basic inequity in our education system: lower income students score lower on math scores. This holds true even if we control for parental education. 
 
 _Quick Exercise_ Add another variable to your model from above and see what difference it makes. How is your RMSE? 
 
@@ -120,9 +119,9 @@ mod3<-lm(bynels2m~byses_p+
 This changes the coefficient AND its interpretation. Now, for every one percent increase in SES, math scores are predicted to increase by `r round(mod3$coefficients[2],2)`. Linear transformations will not change the statistical significance (t value), but non linear transformations like the one we just did will, as you can see. Does this change the RMSE? 
 
 ```{r}
-modelr::rmse(mod3,els_train)
+rmse_3<-modelr::rmse(mod3,els_train)
 ```
- It looks like it actually decreases it a bit. 
+ It looks like it actually increases it a bit. 
 
 ## Testing and Training
 
@@ -148,7 +147,11 @@ Now we can use the model we trained (model 3) on the testing data.
 
 ```{r}
 ## Generate a prediction from the testing dataset
-rmse_test_1<-modelr::rmse(mod3,els_test);rmse_test_1
+rmse_test_1<-modelr::rmse(mod1,els_test);rmse_test_1
+
+rmse_test_2<-modelr::rmse(mod2,els_test);rmse_test_2
+
+rmse_test_3<-modelr::rmse(mod3,els_test);rmse_test_3
 ```
 
 Notice that this is different than the value for our training dataset. 
