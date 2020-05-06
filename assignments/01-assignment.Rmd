@@ -1,0 +1,39 @@
+---
+  title: "01-assignment.Rmd"
+output: html_document
+---
+  
+  ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+## Assignment 1
+
+For your first assignment, I want you to create a file called 01-assignment_<lastname>.Rmd .
+elements:
+  1. A sentence that says “Hello, World”
+
+
+
+2. R output that summarizes one of the variables in the colllege.Rdata
+dataset
+
+
+
+Submit it under assignment 1, using the format 01-assignment-<lastname>.Rmd. All assignments should be turned in using this format. Since my last name is Doyle, I would use 01-assignment-doyle.Rmd as my file name. Unless your name is also Doyle, you should use a different name.
+
+Stretch Items
+
+If you have extra time, you can do the following:
+  
+  1. Calculate the average earnings for individuals at the most selective colleges, then compare that with individuals at the least selective colleges in the dataset.
+
+2. Find a way to determine whether colleges with very high SAT scores tend to be larger or smaller than colleges with low SAT scores.
+
+3. Plot the relationship between cost and debt. What do you see? Does this surprise you?
+  
+  4. Now, provide separate plots for cost and debt by control of the institution.
