@@ -23,7 +23,7 @@ library(forcats)
 ```
 
 ```{r data}
-load("za_train.Rdata")
+load("za_train.RData")
 ```
 
  Our goal is to create a classifier that will accurately classify people in a testing dataset as to whether they will receive a pizza or not, based on the content of their post. This is a VERY common task in data science-- taking user supplied content and using it to accurately classify that user, typically as someone who will buy a product or service.   
@@ -145,7 +145,7 @@ colnames(pred_table)<-c("Actually 0","Actually 1")
 ```
 
 ```{r}
-confusionMatrix(za_train$got_pizza,za_train$pred_lm_out)
+confusionMatrix(as_factor(za_train$got_pizza),as_factor(za_train$pred_lm_out))
 ```
 
 
@@ -194,7 +194,7 @@ za_train<-za_train%>%
 
 Now we create a confusion matrix to see how we did. 
 ```{r}
-confusionMatrix(data=za_train$pred_logit_out,reference=za_train$got_pizza)
+confusionMatrix(data=as_factor(za_train$pred_logit_out),reference=as_factor(za_train$got_pizza))
 ```
 
 ## Applying predictions to the testing dataset.
@@ -208,7 +208,7 @@ za_test<-za_test%>%
   mutate(pred_logit=predict(logit_mod,newdata=.,type="response"))%>%
       mutate(pred_logit_out=ifelse(pred_logit>=.5,1,0))
 
-confusionMatrix(data=za_test$pred_logit_out,reference=za_test$got_pizza)
+confusionMatrix(data=as_factor(za_test$pred_logit_out),reference=as_factor(za_test$got_pizza))
 ```
 
 ## Thinking about classifiers
