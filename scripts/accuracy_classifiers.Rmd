@@ -1,0 +1,179 @@
+---
+title: "Accuracy of Classifiers"
+author: "Doyle"
+date: "7/1/2020"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(modelr)
+library(forcats)
+library(caret)
+```
+
+```{r}
+load("za_train.RData")
+load("za_test.RData")
+```
+
+
+```{r}
+logit_mod<-glm(got_pizza~
+             karma+
+             total_posts+
+             raop_posts+
+             student+
+             grateful,
+             data=za_train,
+            na.action=na.exclude,
+            family=binomial(link="logit"),
+               y=TRUE)
+
+summary(logit_mod)
+```
+
+
+
+```{r}
+za_train<-za_train%>%
+  mutate(pred_logit=predict(logit_mod,type="response"))
+```
+
+We can convert the predictions to a binary variable by setting a "threshold" of .5. Any prediction above .5 is considered to be a 1, anything below, a 0. 
+```{r}
+za_train<-za_train%>%
+    mutate(pred_logit_out=ifelse(pred_logit>=.5,1,0))
+```
+
+Now we create a confusion matrix to see how we did. 
+
+*NB: I got thrown off because I forgot to specify what a "positive" outcome was: 1.*
+```{r}
+confusionMatrix(data=as_factor(za_train$pred_logit_out),
+                reference=as_factor(za_train$got_pizza),
+                positive="1")
+```
+
+## Sensitivity
+
+Sensitivity is the probability that a positive case will be correctly predicted to be positive. 
+
+It's the total number of correctly predicted positive cases divided by the total number of positive cases. 
+
+
+```{r}
+sensitivity(data=as_factor(za_train$pred_logit_out),
+                reference=as_factor(za_train$got_pizza),
+                positive="1")
+```
+
+## Specificity
+
+Specificty is the probability that a negative case will be correctly predicted to be negative. 
+
+It's the total number of correctly predicted negative cases divided by the total number of negative cases. 
+
+```{r}
+specificity( data=as_factor(za_train$pred_logit_out),
+                reference=as_factor(za_train$got_pizza),
+                negative="0")
+```
+
+## Sensitivity as a function of the classification threshold
+
+As we decrease the classification threshold, sensitivity will increase
+```{r}
+
+sense_tbl<-tibble(threshold=double(),sensitivity=double())
+
+for (i in seq(.95,.05,by=-.05)){
+
+za_train<-za_train%>%
+    mutate(pred_logit_out=ifelse(pred_logit>=i,1,0))
+
+sense<-sensitivity(data=as_factor(za_train$pred_logit_out),
+                reference=as_factor(za_train$got_pizza),
+                positive="1")
+
+print(paste("Sensitivity at threshold",i, "is", sense) )
+
+sense_list<-c(i,sense)
+names(sense_list)<-c("threshold","sensitivity")
+
+sense_tbl<-bind_rows(sense_tbl,sense_list)
+
+}
+
+```
+
+
+
+## Plot of sensitivity as a function of thresholds
+
+```{r}
+gg<-ggplot(sense_tbl,aes(x=threshold,y=sensitivity))
+gg<-gg+geom_line()
+gg
+```
+
+As we decrease the classification threshold, specificity will decrease
+```{r}
+
+spec_tbl<-tibble(threshold=double(),specificity=double())
+
+for (i in seq(.95,.05,by=-.05)){
+
+za_train<-za_train%>%
+    mutate(pred_logit_out=ifelse(pred_logit>=i,1,0))
+
+spec<-specificity(data=as_factor(za_train$pred_logit_out),
+                reference=as_factor(za_train$got_pizza),
+                negative="0")
+
+print(paste("Specificity at threshold",i, "is", spec) )
+
+spec_list<-c(i,spec)
+names(spec_list)<-c("threshold","specificity")
+
+spec_tbl<-bind_rows(spec_tbl,spec_list)
+
+}
+
+```
+
+
+```{r}
+gg<-gg+geom_line(data=spec_tbl,aes(x=threshold,y=specificity),color="blue")
+gg<-gg+ylab("Measure: Sense in Black, Spec in Blue")
+gg
+```
+
+
+```{r}
+za_train<-za_train%>%
+    mutate(pred_logit_out=ifelse(pred_logit>=.23,1,0))
+
+confusionMatrix(data=as_factor(za_train$pred_logit_out),
+                reference=as_factor(za_train$got_pizza),
+                positive="1")
+```
+
+## Real accuracy is always tested agains the *testing* dataset
+
+```{r}
+
+za_test<-za_test%>%
+      mutate(pred_logit=predict(logit_mod,type="response",newdata=za_test))%>%
+      mutate(pred_logit_out=ifelse(pred_logit>=.5,1,0))
+      
+
+confusionMatrix(data=as_factor(za_test$pred_logit_out),
+                reference=as_factor(za_test$got_pizza),
+                positive="1")      
+      
+```
+
+
+
