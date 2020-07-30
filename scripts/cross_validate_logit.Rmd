@@ -5,7 +5,6 @@ date: "7/22/2020"
 output: html_document
 ---
 
-
 ```{r}
 library(tidyverse)
 library(caret)
@@ -14,7 +13,6 @@ library(caret)
 
 ```{r}
 load("attrition.Rdata")
-
 ```
 
 ## Important: for this to work you need to define your outcome as a factor
@@ -62,9 +60,7 @@ mod1_results<-train(mod1_formula,
 
 ## Summary of results
 ```{r}
-
 summary(mod1_results$finalModel)
-
 ```
 
 
@@ -76,7 +72,6 @@ summary(mod1_results$finalModel)
 mod1_results$results$Accuracy
 
 ## SD Accuracy
-
 mod1_results$results$AccuracySD
 
 ## Plot
@@ -90,7 +85,7 @@ gg
 ```{r}
 mod1_sense<-mod1_results$pred%>%
   group_by(Resample)%>%
-  summarize(sense=sensitivity(data=as.factor(pred),
+  summarize(sense=caret::sensitivity(data=as.factor(pred),
                               reference=as.factor(obs),
                               positive="Yes"))
 
@@ -109,9 +104,9 @@ gg
 ```{r}
 mod1_spec<-mod1_results$pred%>%
   group_by(Resample)%>%
-  summarize(spec=specificity(data=as.factor(pred),
+  summarize(spec=caret::specificity(data=as.factor(pred),
                              reference=as.factor(obs),
-                             positive="Yes"))
+                             negative="No"))
 
 ## Mean Specificty
 mod1_spec%>%summarize(mean_spec=mean(spec))
